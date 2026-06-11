@@ -1,0 +1,14 @@
+# Keep the build context small and never bake secrets or local build output in.
+node_modules
+build
+.react-router
+.vitest
+.git
+.gitignore
+.DS_Store
+*.log
+
+# Secrets — set these as real environment variables on the host instead.
+.env
+.env.*
+!.env.example
