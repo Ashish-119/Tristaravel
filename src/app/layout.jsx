@@ -243,7 +243,7 @@ export default function RootLayout({ children }) {
                   </li>
                   <li className="flex items-center gap-3">
                     <Mail size={18} className="text-[#FBBF24] shrink-0" />
-                    <span>hello@tristaravel.com</span>
+                    <span>tristaraveltours@gmail.com</span>
                   </li>
                 </ul>
               </div>
