@@ -13,8 +13,9 @@ import {
   IndianRupee,
   RefreshCw,
   CheckCircle2,
-  XCircle, 
+  XCircle,
   Inbox,
+  RotateCcw,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import StatusBadge from "@/app/components/StatusBadge";
@@ -25,9 +26,12 @@ function fmtDistance(d) {
   return Number.isFinite(n) ? `${n.toFixed(0)} km` : "—";
 }
 
-function fmtPrice(p) {
+function fmtPrice(p, pMax) {
   if (p === null || p === undefined) return "Custom";
-  return `₹${Number(p).toLocaleString("en-IN")}`;
+  const min = `₹${Number(p).toLocaleString("en-IN")}`;
+  if (pMax !== null && pMax !== undefined)
+    return `${min} – ₹${Number(pMax).toLocaleString("en-IN")}`;
+  return min;
 }
 
 function fmtAgo(ts) {
@@ -74,11 +78,11 @@ export default function DriverDashboard() {
   });
 
   const claimMutation = useMutation({
-    mutationFn: async (id) => {
+    mutationFn: async ({ id, trip_type }) => {
       const res = await fetch(`/api/driver/leads/${id}/claim`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: "{}",
+        body: JSON.stringify({ trip_type }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Could not claim this lead");
@@ -90,17 +94,16 @@ export default function DriverDashboard() {
     },
     onError: (err) => {
       toast.error(err.message);
-      // Refresh so a now-taken lead disappears from the pool.
       queryClient.invalidateQueries({ queryKey: ["driver-leads"] });
     },
   });
 
   const cancelMutation = useMutation({
-    mutationFn: async (id) => {
+    mutationFn: async ({ id, trip_type }) => {
       const res = await fetch(`/api/driver/leads/${id}/status`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "cancelled" }),
+        body: JSON.stringify({ status: "cancelled", trip_type }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Could not cancel this ride");
@@ -132,7 +135,6 @@ export default function DriverDashboard() {
       </div>
     );
   }
-  // While redirecting an unauthenticated user, render nothing.
   if (!meQuery.isSuccess) return null;
 
   const driver = meQuery.data.driver;
@@ -227,7 +229,7 @@ export default function DriverDashboard() {
               <tbody>
                 {rows.map((lead) => (
                   <tr
-                    key={lead.id}
+                    key={`${lead.trip_type}-${lead.id}`}
                     className="border-b border-slate-50 last:border-0 hover:bg-slate-50/60"
                   >
                     <td className="px-4 py-3">
@@ -243,11 +245,21 @@ export default function DriverDashboard() {
                     <td className="px-4 py-3 text-slate-700">
                       <div className="font-medium">{lead.pickup}</div>
                       <div className="text-xs text-slate-400">↓ {lead.dropoff}</div>
+                      {lead.trip_type === "round_trip" && (
+                        <div className="mt-1 flex flex-wrap items-center gap-1">
+                          <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-700 text-[10px] font-bold px-1.5 py-0.5 rounded">
+                            <RotateCcw className="w-2.5 h-2.5" /> Round Trip
+                          </span>
+                          <span className="text-[10px] text-slate-400">
+                            {lead.travel_date} · {lead.pickup_time} · {lead.num_days}d
+                          </span>
+                        </div>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-slate-600">{lead.car_type}</td>
                     <td className="px-4 py-3 text-slate-600">{fmtDistance(lead.distance)}</td>
                     <td className="px-4 py-3 font-semibold text-slate-800">
-                      {fmtPrice(lead.price)}
+                      {fmtPrice(lead.price, lead.price_max)}
                     </td>
                     <td className="px-4 py-3">
                       <StatusBadge status={lead.status} />
@@ -258,7 +270,7 @@ export default function DriverDashboard() {
                     <td className="px-4 py-3 text-right">
                       {tab === "available" ? (
                         <button
-                          onClick={() => claimMutation.mutate(lead.id)}
+                          onClick={() => claimMutation.mutate({ id: lead.id, trip_type: lead.trip_type })}
                           disabled={claimMutation.isPending}
                           className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors disabled:opacity-60"
                         >
@@ -267,7 +279,7 @@ export default function DriverDashboard() {
                         </button>
                       ) : lead.status === "confirmed" ? (
                         <button
-                          onClick={() => cancelMutation.mutate(lead.id)}
+                          onClick={() => cancelMutation.mutate({ id: lead.id, trip_type: lead.trip_type })}
                           disabled={cancelMutation.isPending}
                           className="inline-flex items-center gap-1.5 bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-bold px-3 py-2 rounded-lg transition-colors disabled:opacity-60"
                         >
@@ -287,8 +299,8 @@ export default function DriverDashboard() {
       </div>
 
       <p className="text-[11px] text-slate-400 mt-4">
-        Leads refresh automatically every 30s. New requests start as “New” and
-        become “Pending” if not picked within 1 hour.
+        Leads refresh automatically every 30s. New requests start as "New" and
+        become "Pending" if not picked within 1 hour.
       </p>
     </div>
   );

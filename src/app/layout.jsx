@@ -28,7 +28,7 @@ const navLinks = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About Us" },
   { href: "/services", label: "Services" },
-  { href: "/rent", label: "Rent a Car" },
+  { href: "/?trip=round", label: "Rent a Car" },
   { href: "/contact", label: "Contact" },
 ];
 

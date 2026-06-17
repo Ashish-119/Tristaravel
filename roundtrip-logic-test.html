@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Round Trip Logic Tester — Tristaravel</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #1E293B;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 16px 60px;
+    }
+
+    /* ── Hero strip ───────────────────────────────── */
+    .hero-label {
+      color: #FBBF24;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: rgba(251,191,36,0.12);
+      padding: 6px 16px;
+      border-radius: 999px;
+      margin-bottom: 18px;
+    }
+    .hero-title {
+      color: #fff;
+      font-size: 36px;
+      font-weight: 800;
+      text-align: center;
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+    .hero-title span { color: #FBBF24; }
+    .hero-sub {
+      color: #94a3b8;
+      font-size: 14px;
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    /* ── Card ─────────────────────────────────────── */
+    .card {
+      background: #fff;
+      border-radius: 28px;
+      padding: 28px 28px 32px;
+      width: 100%;
+      max-width: 560px;
+      box-shadow: 0 30px 70px rgba(0,0,0,0.45);
+    }
+
+    /* ── Toggle pill ──────────────────────────────── */
+    .toggle-wrap {
+      display: flex;
+      background: #f1f5f9;
+      border-radius: 18px;
+      padding: 5px;
+      margin-bottom: 24px;
+      gap: 4px;
+    }
+    .toggle-btn {
+      flex: 1;
+      padding: 10px 12px;
+      border: none;
+      border-radius: 13px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      transition: all 0.2s;
+      background: transparent;
+      color: #64748b;
+    }
+    .toggle-btn:hover { color: #1E293B; }
+    .toggle-btn.active {
+      background: #fff;
+      color: #1E293B;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.10);
+    }
+    .toggle-btn svg { width: 15px; height: 15px; }
+
+    /* ── Form section headers ─────────────────────── */
+    .form-title { font-size: 20px; font-weight: 800; color: #1E293B; }
+    .form-sub   { font-size: 12px; color: #94a3b8; margin-top: 3px; margin-bottom: 22px; }
+
+    /* ── Field layout ─────────────────────────────── */
+    label {
+      display: block;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: #94a3b8;
+      margin-bottom: 7px;
+    }
+    .field   { margin-bottom: 16px; }
+    .row-2   { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .row-3   { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+    .input-wrap { position: relative; }
+    .input-wrap .ico {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 15px; height: 15px;
+      color: #94a3b8;
+      pointer-events: none;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="date"],
+    select {
+      width: 100%;
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px 14px 12px 40px;
+      font-size: 13px;
+      color: #1e293b;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    input:focus, select:focus {
+      border-color: #FBBF24;
+      box-shadow: 0 0 0 3px rgba(251,191,36,0.18);
+    }
+    input::placeholder { color: #94a3b8; }
+
+    /* Chevron for selects */
+    .select-wrap::after {
+      content: '';
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0; height: 0;
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-top: 5px solid #94a3b8;
+      pointer-events: none;
+    }
+
+    /* ── Days stepper ─────────────────────────────── */
+    .stepper {
+      display: flex;
+      align-items: center;
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 8px 12px;
+      gap: 10px;
+    }
+    .step-btn {
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      background: #e2e8f0;
+      border: none;
+      font-size: 17px;
+      font-weight: 700;
+      color: #475569;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      transition: background 0.12s;
+      user-select: none;
+      flex-shrink: 0;
+    }
+    .step-btn:hover { background: #cbd5e1; }
+    .step-val {
+      flex: 1;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    /* ── Divider ──────────────────────────────────── */
+    .divider {
+      border: none;
+      border-top: 1.5px solid #f1f5f9;
+      margin: 20px 0 16px;
+    }
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: #94a3b8;
+      margin-bottom: 14px;
+    }
+
+    /* ── Estimate box ─────────────────────────────── */
+    .estimate {
+      border-left: 5px solid #c1121f;
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+    .est-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #222;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 12px;
+    }
+    .est-title svg { color: #c1121f; width: 14px; height: 14px; flex-shrink: 0; }
+
+    .est-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .est-card {
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+    }
+    .est-card.light { background: #f8fafc; }
+    .est-card.dark  { background: #1E293B; }
+    .est-clabel {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 5px;
+    }
+    .est-card.light .est-clabel { color: #94a3b8; }
+    .est-card.dark  .est-clabel { color: #FBBF24; }
+    .est-cval {
+      font-size: 19px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+    .est-card.light .est-cval { color: #1E293B; }
+    .est-card.dark  .est-cval { color: #fff; }
+    .est-csub { font-size: 10px; color: #94a3b8; margin-top: 3px; }
+    .range-upper { font-size: 12px; font-weight: 600; color: #FBBF24; }
+
+    .est-basis {
+      background: #f8fafc;
+      border-radius: 10px;
+      padding: 10px 13px;
+      font-size: 11px;
+      color: #64748b;
+      line-height: 1.7;
+    }
+    .basis-km  { font-weight: 700; color: #c1121f; }
+    .basis-day { font-weight: 700; color: #059669; }
+    .basis-low { color: #94a3b8; }
+
+    .est-note {
+      font-size: 10px;
+      color: #94a3b8;
+      margin-top: 9px;
+      line-height: 1.5;
+    }
+
+    /* Loading / Error */
+    .loading-row {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 13px; font-weight: 500; color: #64748b;
+    }
+    .spinner {
+      width: 17px; height: 17px;
+      border: 2.5px solid #e2e8f0;
+      border-top-color: #c1121f;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error-row {
+      display: flex; align-items: flex-start; gap: 8px;
+      font-size: 12px; color: #dc2626;
+    }
+    .error-row svg { width: 15px; height: 15px; flex-shrink: 0; margin-top: 1px; }
+
+    /* One-way mock estimate */
+    .ow-estimate {
+      border-left: 5px solid #c1121f;
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+    .ow-estimate .est-cards { margin-bottom: 0; }
+
+    /* ── Submit btn ───────────────────────────────── */
+    .submit-btn {
+      width: 100%;
+      background: #c1121f;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 15px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      transition: background 0.15s;
+    }
+    .submit-btn:hover { background: #a50f1a; }
+    .submit-btn svg { width: 18px; height: 18px; }
+
+    /* ── Debug panel ──────────────────────────────── */
+    .debug-toggle {
+      background: none;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 11px;
+      color: #94a3b8;
+      cursor: pointer;
+      margin-top: 14px;
+      transition: all 0.15s;
+      width: 100%;
+    }
+    .debug-toggle:hover { border-color: #94a3b8; color: #475569; }
+    .debug-panel {
+      display: none;
+      margin-top: 12px;
+      background: #0f172a;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 11px;
+      font-family: monospace;
+      color: #94a3b8;
+      line-height: 1.8;
+    }
+    .debug-panel.open { display: block; }
+    .dk { color: #FBBF24; }
+    .dv { color: #34d399; }
+    .dh { color: #f8fafc; font-weight: bold; margin-bottom: 4px; }
+
+    /* Hidden/shown helpers */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+  </style>
+</head>
+<body>
+
+  <!-- Hero strip -->
+  <div class="hero-label">Intercity Travel · India</div>
+  <div class="hero-title">Premium Travel,<br><span>Any City. Any Time.</span></div>
+  <div class="hero-sub">UI + Logic Preview — same APIs as production</div>
+
+  <!-- Card -->
+  <div class="card">
+
+    <!-- ── Toggle ───────────────────────────────── -->
+    <div class="toggle-wrap">
+      <button class="toggle-btn active" id="btn-ow" onclick="switchTab('ow')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
+        One Way
+      </button>
+      <button class="toggle-btn" id="btn-rt" onclick="switchTab('rt')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+        Round Trip
+      </button>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- ONE WAY PANEL (existing form — mockup)     -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="tab-panel active" id="panel-ow">
+      <div class="form-title">Plan Your Journey</div>
+      <div class="form-sub">Get an instant fare estimate — no sign-up needed</div>
+
+      <div class="row-2 field">
+        <div>
+          <label>Pickup Location</label>
+          <div class="input-wrap">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <input type="text" id="ow-pickup" placeholder="City / Town / Village" />
+          </div>
+        </div>
+        <div>
+          <label>Drop Location</label>
+          <div class="input-wrap">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+            <input type="text" id="ow-drop" placeholder="City / Town / Village" />
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Vehicle Type</label>
+        <div class="input-wrap select-wrap">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 4v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          <select id="ow-vehicle" onchange="owCalcFare()">
+            <option value="Small Sedan">Small Sedan — Dzire, Aura, Xcent</option>
+            <option value="Large SUV">Large SUV — Innova, Ertiga, Crysta</option>
+            <option value="Traveller">Traveller — Tempo Traveller (Custom)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- One-way estimate box -->
+      <div id="ow-estimate" style="display:none;" class="ow-estimate">
+        <div id="ow-estimate-content"></div>
+      </div>
+
+      <hr class="divider" />
+      <div class="section-label">Your Details</div>
+
+      <div class="field">
+        <div class="input-wrap">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <input type="text" placeholder="Full Name *" />
+        </div>
+      </div>
+      <div class="row-2 field">
+        <div class="input-wrap">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <input type="email" placeholder="Email (Optional)" />
+        </div>
+        <div class="input-wrap">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.26 2 2 0 0 1 3.59 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.06 6.06l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <input type="tel" placeholder="Phone *" />
+        </div>
+      </div>
+
+      <button class="submit-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 4v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        Get Quote
+      </button>
+    </div><!-- /panel-ow -->
+
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- ROUND TRIP PANEL                          -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="tab-panel" id="panel-rt">
+      <div class="form-title">Plan Your Round Trip</div>
+      <div class="form-sub">Best-value pricing — calculated automatically for you</div>
+
+      <!-- Pickup & Drop -->
+      <div class="row-2 field">
+        <div>
+          <label>Pickup Point</label>
+          <div class="input-wrap">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <input type="text" id="rt-pickup" placeholder="City / Town / Village" />
+          </div>
+        </div>
+        <div>
+          <label>Drop Point</label>
+          <div class="input-wrap">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+            <input type="text" id="rt-drop" placeholder="City / Town / Village" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Travel Date & Pickup Time -->
+      <div class="row-2 field">
+        <div>
+          <label>Travel Date</label>
+          <div class="input-wrap">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <input type="date" id="rt-date" />
+          </div>
+        </div>
+        <div>
+          <label>Pickup Time</label>
+          <div class="input-wrap select-wrap">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <select id="rt-time"></select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Number of Days -->
+      <div class="field">
+        <label>Number of Days</label>
+        <div class="stepper">
+          <button class="step-btn" id="days-down">−</button>
+          <div class="step-val" id="days-val">2 days</div>
+          <button class="step-btn" id="days-up">+</button>
+        </div>
+      </div>
+
+      <!-- Vehicle Type -->
+      <div class="field">
+        <label>Vehicle Type</label>
+        <div class="input-wrap select-wrap">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 4v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          <select id="rt-vehicle" onchange="rtRefreshFare()">
+            <option value="Small Sedan">Small Sedan — ₹3,000/day · ₹15/km</option>
+            <option value="Large SUV">Large SUV — ₹5,000/day · ₹18/km</option>
+            <option value="Traveller">Traveller — Tempo Traveller (Custom)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- RT Estimate box -->
+      <div id="rt-estimate" style="display:none;" class="estimate">
+        <div id="rt-estimate-content"></div>
+      </div>
+
+      <hr class="divider" />
+      <div class="section-label">Your Details</div>
+
+      <div class="field">
+        <div class="input-wrap">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <input type="text" placeholder="Full Name *" />
+        </div>
+      </div>
+      <div class="row-2 field">
+        <div class="input-wrap">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <input type="email" placeholder="Email (Optional)" />
+        </div>
+        <div class="input-wrap">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.26 2 2 0 0 1 3.59 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.06 6.06l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <input type="tel" placeholder="Phone *" />
+        </div>
+      </div>
+
+      <button class="submit-btn" id="rt-submit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+        Get Round Trip Quote
+      </button>
+
+      <button class="debug-toggle" id="debug-toggle">Show calculation breakdown</button>
+      <div class="debug-panel" id="debug-panel"></div>
+    </div><!-- /panel-rt -->
+
+  </div><!-- /card -->
+
+<script>
+  // ═══════════════════════════════════════════════════════
+  // TOGGLE
+  // ═══════════════════════════════════════════════════════
+  function switchTab(tab) {
+    document.getElementById('panel-ow').classList.toggle('active', tab === 'ow');
+    document.getElementById('panel-rt').classList.toggle('active', tab === 'rt');
+    document.getElementById('btn-ow').classList.toggle('active', tab === 'ow');
+    document.getElementById('btn-rt').classList.toggle('active', tab === 'rt');
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // SHARED APIs
+  // ═══════════════════════════════════════════════════════
+  async function getCoords(place) {
+    const r = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(place)}`,
+      { headers: { 'Accept-Language': 'en' } }
+    );
+    const d = await r.json();
+    return d.length ? { lat: d[0].lat, lon: d[0].lon } : null;
+  }
+  async function getRouteKM(a, b) {
+    const r = await fetch(
+      `https://router.project-osrm.org/route/v1/driving/${a.lon},${a.lat};${b.lon},${b.lat}?overview=false`
+    );
+    const d = await r.json();
+    return d.routes?.length ? d.routes[0].distance / 1000 : null;
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // ONE-WAY LOGIC
+  // ═══════════════════════════════════════════════════════
+  const OW_RATE = { 'Small Sedan': 11, 'Large SUV': 15 };
+  let owKM = null, owDebounce = null;
+
+  function owCalcFare() {
+    if (owKM === null) return;
+    const veh  = document.getElementById('ow-vehicle').value;
+    const rate = OW_RATE[veh];
+    const box  = document.getElementById('ow-estimate');
+    const con  = document.getElementById('ow-estimate-content');
+    box.style.display = 'block';
+    if (!rate) {
+      con.innerHTML = owDoneHTML(owKM, null);
+    } else {
+      con.innerHTML = owDoneHTML(owKM, Math.round(owKM * rate));
+    }
+  }
+
+  function owDoneHTML(km, fare) {
+    return `
+      <div class="est-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Your Journey Summary
+      </div>
+      <div class="est-cards">
+        <div class="est-card light">
+          <div class="est-clabel">Total Distance</div>
+          <div class="est-cval">${km.toFixed(1)} <span style="font-size:13px;color:#64748b">KM</span></div>
+        </div>
+        <div class="est-card dark">
+          <div class="est-clabel">Approx. Fare</div>
+          ${fare !== null
+            ? `<div class="est-cval">₹${fare.toLocaleString('en-IN')}</div>`
+            : `<div class="est-cval" style="font-size:12px;color:#FBBF24;margin-top:4px">Custom Pricing<br>Contact Us</div>`
+          }
+        </div>
+      </div>
+      <p class="est-note">* Estimate based on road distance. Tolls, state taxes & driver allowance may apply.</p>`;
+  }
+
+  function owOnLocation() {
+    clearTimeout(owDebounce);
+    const p = document.getElementById('ow-pickup').value.trim();
+    const d = document.getElementById('ow-drop').value.trim();
+    const box = document.getElementById('ow-estimate');
+    if (!p || !d) { box.style.display = 'none'; owKM = null; return; }
+    owKM = null;
+    box.style.display = 'block';
+    document.getElementById('ow-estimate-content').innerHTML =
+      `<div class="loading-row"><div class="spinner"></div>Calculating distance & fare…</div>`;
+    owDebounce = setTimeout(async () => {
+      try {
+        const [from, to] = await Promise.all([getCoords(p), getCoords(d)]);
+        if (!from || !to) { owErr('Location not found. Check city names.'); return; }
+        const km = await getRouteKM(from, to);
+        if (!km) { owErr('No driving route found.'); return; }
+        owKM = km;
+        owCalcFare();
+      } catch { owErr('Network error. Try again.'); }
+    }, 800);
+  }
+  function owErr(msg) {
+    document.getElementById('ow-estimate-content').innerHTML =
+      `<div class="error-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>${msg}</span></div>`;
+  }
+  document.getElementById('ow-pickup').addEventListener('input', owOnLocation);
+  document.getElementById('ow-drop').addEventListener('input', owOnLocation);
+
+  // ═══════════════════════════════════════════════════════
+  // ROUND-TRIP LOGIC
+  // ═══════════════════════════════════════════════════════
+  const RT_DAILY   = { 'Small Sedan': 3000, 'Large SUV': 5000 };
+  const RT_KM_RATE = { 'Small Sedan': 15,   'Large SUV': 18   };
+
+  function calcRTFare(oneWayKM, numDays, veh) {
+    const daily = RT_DAILY[veh];
+    const rate  = RT_KM_RATE[veh];
+    if (!daily || !rate) return null;
+    const totalKM = Math.round(oneWayKM * 2 + 100);
+    const dayCost = numDays * daily;
+    const kmCost  = Math.round(totalKM * rate);
+    if (kmCost >= dayCost) return { basis:'km', min:kmCost, max:Math.round(totalKM*(rate+5)), totalKM, dayCost, rate, daily, numDays };
+    return { basis:'day', amount:dayCost, totalKM, kmCost, rate, daily, numDays };
+  }
+
+  let rtKM = null, numDays = 2, rtDebounce = null;
+
+  // Populate time select
+  const timeEl = document.getElementById('rt-time');
+  for (let i = 0; i < 48; i++) {
+    const h = Math.floor(i/2), m = i%2===0?'00':'30';
+    const h12 = h===0?12:h>12?h-12:h, p = h<12?'AM':'PM';
+    const o = document.createElement('option');
+    o.value = `${String(h).padStart(2,'0')}:${m}`;
+    o.textContent = `${h12}:${m} ${p}`;
+    if (h===9&&m==='00') o.selected=true;
+    timeEl.appendChild(o);
+  }
+
+  // Min date = today
+  const td = new Date(), ty=td.getFullYear(), tm=String(td.getMonth()+1).padStart(2,'0'), tdd=String(td.getDate()).padStart(2,'0');
+  document.getElementById('rt-date').min = `${ty}-${tm}-${tdd}`;
+
+  // Stepper
+  function updateDays() {
+    document.getElementById('days-val').textContent = `${numDays} ${numDays===1?'day':'days'}`;
+    rtRefreshFare();
+  }
+  document.getElementById('days-down').onclick = () => { if(numDays>1){numDays--;updateDays();} };
+  document.getElementById('days-up').onclick   = () => { if(numDays<30){numDays++;updateDays();} };
+
+  function rtRefreshFare() {
+    if (rtKM === null) return;
+    const veh  = document.getElementById('rt-vehicle').value;
+    const fare = calcRTFare(rtKM, numDays, veh);
+    rtShowResult(fare, veh);
+  }
+
+  function rtShowResult(fare, veh) {
+    const box = document.getElementById('rt-estimate');
+    const con = document.getElementById('rt-estimate-content');
+    box.style.display = 'block';
+
+    let html = '', debug = {};
+
+    if (!fare) {
+      // Traveller
+      const totalKM = Math.round(rtKM*2+100);
+      html = `
+        <div class="est-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Round Trip Estimate</div>
+        <div class="est-cards">
+          <div class="est-card light"><div class="est-clabel">Total Distance</div><div class="est-cval">${totalKM.toLocaleString('en-IN')} <span style="font-size:13px;color:#64748b">KM</span></div><div class="est-csub">incl. 100km sightseeing</div></div>
+          <div class="est-card dark"><div class="est-clabel">Est. Fare</div><div class="est-cval" style="font-size:12px;color:#FBBF24;margin-top:4px">Custom Pricing<br>Contact Us</div></div>
+        </div>
+        <p class="est-note">* Tempo Traveller pricing on request. Tolls & taxes extra.</p>`;
+      debug = { vehicle: veh, one_way_km: rtKM.toFixed(1), pricing: 'custom (Traveller)' };
+    } else if (fare.basis === 'km') {
+      html = `
+        <div class="est-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Round Trip Estimate</div>
+        <div class="est-cards">
+          <div class="est-card light">
+            <div class="est-clabel">Total Distance</div>
+            <div class="est-cval">${fare.totalKM.toLocaleString('en-IN')} <span style="font-size:13px;color:#64748b">KM</span></div>
+            <div class="est-csub">incl. 100km sightseeing</div>
+          </div>
+          <div class="est-card dark">
+            <div class="est-clabel">Est. Fare</div>
+            <div class="est-cval">₹${fare.min.toLocaleString('en-IN')}<div class="range-upper">– ₹${fare.max.toLocaleString('en-IN')}</div></div>
+          </div>
+        </div>
+        <div class="est-basis">
+          <span class="basis-km">✓ Km-based pricing applied</span> — ${fare.totalKM.toLocaleString('en-IN')} km × ₹${fare.rate}/km<br>
+          <span class="basis-low">Per-day rental for ${fare.numDays} day${fare.numDays!==1?'s':''}: ₹${fare.dayCost.toLocaleString('en-IN')} (lower — not applied)</span>
+        </div>
+        <p class="est-note">* Estimate based on road distance. Tolls, state taxes & driver allowance may apply.</p>`;
+      debug = {
+        one_way_km: rtKM.toFixed(1),
+        total_km:   fare.totalKM + '  ←  (' + rtKM.toFixed(1) + '×2) + 100',
+        num_days:   fare.numDays,
+        km_rate:    '₹' + fare.rate + '/km',
+        daily_rate: '₹' + fare.daily + '/day',
+        km_cost:    '₹' + fare.min.toLocaleString('en-IN') + '  (' + fare.totalKM + '×' + fare.rate + ')',
+        day_cost:   '₹' + fare.dayCost.toLocaleString('en-IN') + '  (' + fare.numDays + '×' + fare.daily + ')',
+        WINNER:     'km_cost wins  →  show range',
+        range_min:  '₹' + fare.min.toLocaleString('en-IN') + '  (' + fare.totalKM + '×' + fare.rate + ')',
+        range_max:  '₹' + fare.max.toLocaleString('en-IN') + '  (' + fare.totalKM + '×' + (fare.rate+5) + ')',
+      };
+    } else {
+      html = `
+        <div class="est-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Round Trip Estimate</div>
+        <div class="est-cards">
+          <div class="est-card light">
+            <div class="est-clabel">Rental Days</div>
+            <div class="est-cval">${fare.numDays} <span style="font-size:13px;color:#64748b">days</span></div>
+            <div class="est-csub">@ ₹${fare.daily.toLocaleString('en-IN')}/day</div>
+          </div>
+          <div class="est-card dark">
+            <div class="est-clabel">Est. Fare</div>
+            <div class="est-cval">₹${fare.amount.toLocaleString('en-IN')}</div>
+          </div>
+        </div>
+        <div class="est-basis">
+          <span class="basis-day">✓ Per-day rate applied</span> — ${fare.numDays} day${fare.numDays!==1?'s':''} × ₹${fare.daily.toLocaleString('en-IN')}/day<br>
+          <span class="basis-low">Km-based cost: ₹${fare.kmCost.toLocaleString('en-IN')} (lower — not applied)</span>
+        </div>
+        <p class="est-note">* Estimate based on road distance. Tolls, state taxes & driver allowance may apply.</p>`;
+      debug = {
+        one_way_km: rtKM.toFixed(1),
+        total_km:   fare.totalKM + '  ←  (' + rtKM.toFixed(1) + '×2) + 100',
+        num_days:   fare.numDays,
+        km_rate:    '₹' + fare.rate + '/km',
+        daily_rate: '₹' + fare.daily + '/day',
+        km_cost:    '₹' + fare.kmCost.toLocaleString('en-IN') + '  (' + fare.totalKM + '×' + fare.rate + ')',
+        day_cost:   '₹' + fare.amount.toLocaleString('en-IN') + '  (' + fare.numDays + '×' + fare.daily + ')',
+        WINNER:     'day_cost wins  →  show flat price',
+        shown:      '₹' + fare.amount.toLocaleString('en-IN'),
+      };
+    }
+
+    con.innerHTML = html;
+
+    // Populate debug
+    let dbHTML = `<div class="dh">─── Calculation Breakdown ───</div>`;
+    for (const [k,v] of Object.entries(debug)) {
+      dbHTML += `<div><span class="dk">${k}:</span>  <span class="dv">${v}</span></div>`;
+    }
+    document.getElementById('debug-panel').innerHTML = dbHTML;
+  }
+
+  function rtOnLocation() {
+    clearTimeout(rtDebounce);
+    const p = document.getElementById('rt-pickup').value.trim();
+    const d = document.getElementById('rt-drop').value.trim();
+    const box = document.getElementById('rt-estimate');
+    rtKM = null;
+    if (!p || !d) { box.style.display='none'; return; }
+    box.style.display = 'block';
+    document.getElementById('rt-estimate-content').innerHTML =
+      `<div class="loading-row"><div class="spinner"></div>Calculating distance & fare…</div>`;
+    rtDebounce = setTimeout(async () => {
+      try {
+        const [from, to] = await Promise.all([getCoords(p), getCoords(d)]);
+        if (!from||!to) { rtErr('Location not found. Check city names.'); return; }
+        const km = await getRouteKM(from, to);
+        if (!km) { rtErr('No driving route found.'); return; }
+        rtKM = km;
+        const veh  = document.getElementById('rt-vehicle').value;
+        rtShowResult(calcRTFare(km, numDays, veh), veh);
+      } catch { rtErr('Network error. Try again.'); }
+    }, 800);
+  }
+  function rtErr(msg) {
+    document.getElementById('rt-estimate-content').innerHTML =
+      `<div class="error-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>${msg}</span></div>`;
+  }
+
+  document.getElementById('rt-pickup').addEventListener('input', rtOnLocation);
+  document.getElementById('rt-drop').addEventListener('input', rtOnLocation);
+
+  // Submit test
+  document.getElementById('rt-submit').addEventListener('click', () => {
+    const p   = document.getElementById('rt-pickup').value.trim();
+    const d   = document.getElementById('rt-drop').value.trim();
+    const dt  = document.getElementById('rt-date').value;
+    const tm  = document.getElementById('rt-time').value;
+    const veh = document.getElementById('rt-vehicle').value;
+    if (!p||!d)         return alert('Enter pickup and drop cities.');
+    if (!dt)            return alert('Select a travel date.');
+    if (rtKM===null)    return alert('Wait for distance to calculate.');
+    const fare = calcRTFare(rtKM, numDays, veh);
+    const priceStr = !fare ? 'Custom' : fare.basis==='km'
+      ? `₹${fare.min.toLocaleString('en-IN')} – ₹${fare.max.toLocaleString('en-IN')}`
+      : `₹${fare.amount.toLocaleString('en-IN')}`;
+    alert(`✅ Test submission (not sent to server)\n\nRoute: ${p} → ${d} → ${p}\nDate: ${dt} at ${tm}\nDays: ${numDays}\nVehicle: ${veh}\nOne-way: ${rtKM.toFixed(1)} km  |  Total: ${(rtKM*2+100).toFixed(0)} km\nFare: ${priceStr}`);
+  });
+
+  // Debug toggle
+  document.getElementById('debug-toggle').addEventListener('click', function() {
+    const panel = document.getElementById('debug-panel');
+    panel.classList.toggle('open');
+    this.textContent = panel.classList.contains('open') ? 'Hide calculation breakdown' : 'Show calculation breakdown';
+  });
+</script>
+</body>
+</html>

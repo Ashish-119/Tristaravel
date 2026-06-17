@@ -9,30 +9,78 @@ export async function GET(request) {
     }
 
     // Lazy promotion: any lead still 'new' after 1 hour becomes 'pending'.
-    // Implements the "not picked within 1 hour" rule without a background job.
     await sql`
       UPDATE quotes
       SET status = 'pending', updated_at = now()
       WHERE status = 'new' AND created_at < now() - interval '1 hour'
     `;
+    await sql`
+      UPDATE round_trip_quotes
+      SET status = 'pending', updated_at = now()
+      WHERE status = 'new' AND created_at < now() - interval '1 hour'
+    `;
 
-    // Unclaimed leads anyone can pick.
-    const available = await sql`
+    // Unclaimed one-way leads
+    const owAvailable = await sql`
       SELECT id, full_name, phone, email, pickup, dropoff, car_type,
-             distance, price, status, assigned_driver_id, picked_at, created_at
+             distance, price, status, assigned_driver_id, picked_at, created_at,
+             NULL::date        AS travel_date,
+             NULL::text        AS pickup_time,
+             NULL::integer     AS num_days,
+             NULL::integer     AS price_max,
+             NULL::text        AS pricing_basis,
+             'one_way'::text   AS trip_type
       FROM quotes
       WHERE status IN ('new', 'pending') AND assigned_driver_id IS NULL
       ORDER BY created_at DESC
     `;
 
-    // Leads this driver has claimed.
-    const mine = await sql`
+    // Unclaimed round-trip leads
+    const rtAvailable = await sql`
       SELECT id, full_name, phone, email, pickup, dropoff, car_type,
-             distance, price, status, assigned_driver_id, picked_at, created_at
+             distance, price, status, assigned_driver_id, picked_at, created_at,
+             travel_date, pickup_time, num_days, price_max, pricing_basis,
+             'round_trip'::text AS trip_type
+      FROM round_trip_quotes
+      WHERE status IN ('new', 'pending') AND assigned_driver_id IS NULL
+      ORDER BY created_at DESC
+    `;
+
+    // One-way leads this driver has claimed
+    const owMine = await sql`
+      SELECT id, full_name, phone, email, pickup, dropoff, car_type,
+             distance, price, status, assigned_driver_id, picked_at, created_at,
+             NULL::date        AS travel_date,
+             NULL::text        AS pickup_time,
+             NULL::integer     AS num_days,
+             NULL::integer     AS price_max,
+             NULL::text        AS pricing_basis,
+             'one_way'::text   AS trip_type
       FROM quotes
       WHERE assigned_driver_id = ${driver.id}
       ORDER BY picked_at DESC NULLS LAST, created_at DESC
     `;
+
+    // Round-trip leads this driver has claimed
+    const rtMine = await sql`
+      SELECT id, full_name, phone, email, pickup, dropoff, car_type,
+             distance, price, status, assigned_driver_id, picked_at, created_at,
+             travel_date, pickup_time, num_days, price_max, pricing_basis,
+             'round_trip'::text AS trip_type
+      FROM round_trip_quotes
+      WHERE assigned_driver_id = ${driver.id}
+      ORDER BY picked_at DESC NULLS LAST, created_at DESC
+    `;
+
+    // Merge and sort by created_at descending
+    const available = [...owAvailable, ...rtAvailable].sort(
+      (a, b) => new Date(b.created_at) - new Date(a.created_at),
+    );
+    const mine = [...owMine, ...rtMine].sort(
+      (a, b) =>
+        new Date(b.picked_at ?? b.created_at) -
+        new Date(a.picked_at ?? a.created_at),
+    );
 
     return Response.json({ available, mine });
   } catch (error) {

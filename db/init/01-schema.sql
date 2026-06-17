@@ -24,6 +24,8 @@ CREATE TABLE IF NOT EXISTS quotes (
 -- Helpful for listing the newest quote requests first.
 CREATE INDEX IF NOT EXISTS quotes_created_at_idx ON quotes (created_at DESC);
 
+
+
 -- ── Drivers (admin-seeded accounts for the /driver portal) ──────────────────
 CREATE TABLE IF NOT EXISTS drivers (
   id            bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
