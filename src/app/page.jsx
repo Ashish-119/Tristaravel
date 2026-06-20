@@ -43,22 +43,24 @@ async function getRouteDistance(from, to) {
 }
 
 // ── One-way price calculation ─────────────────────────────────────────────────
-// Same approach as the round-trip estimate: return a {min, max} range using a
-// +5/km buffer on top of the base rate instead of a single approximate amount.
-const OW_KM_RATE = { "Small Sedan": 11, "Large SUV": 15 };
+// Returns a {min, max} fare range: distance × the per-km lower/upper rate for
+// the selected vehicle (e.g. Small Sedan 512 km → 512×15 .. 512×20).
+const OW_MIN_RATE = { "Small Sedan": 15, "Large SUV": 18, "Luxury SUV": 21 };
+const OW_MAX_RATE = { "Small Sedan": 20, "Large SUV": 23, "Luxury SUV": 26 };
 
 function calcFare(distanceKM, vehicleType) {
-  const rate = OW_KM_RATE[vehicleType];
-  if (!rate) return null; // Traveller → custom
+  const minR = OW_MIN_RATE[vehicleType];
+  const maxR = OW_MAX_RATE[vehicleType];
+  if (!minR) return null; // Traveller → custom
   return {
-    min: Math.round(distanceKM * rate),
-    max: Math.round(distanceKM * (rate + 5)),
+    min: Math.round(distanceKM * minR),
+    max: Math.round(distanceKM * maxR),
   };
 }
 
 // ── Round-trip price calculation ──────────────────────────────────────────────
-const RT_DAILY = { "Small Sedan": 3000, "Large SUV": 5000 };
-const RT_KM_RATE = { "Small Sedan": 15, "Large SUV": 18 };
+const RT_DAILY = { "Small Sedan": 3000, "Large SUV": 5000, "Luxury SUV": 7000 };
+const RT_KM_RATE = { "Small Sedan": 15, "Large SUV": 18, "Luxury SUV": 21 };
 
 function calcRoundTripFare(oneWayKM, numDays, vehicleType) {
   const dailyRate = RT_DAILY[vehicleType];
@@ -477,8 +479,9 @@ export default function HomePage() {
                         value={formData.vehicle_type}
                         onChange={field("vehicle_type")}
                       >
-                        <option value="Small Sedan">Small Sedan — Dzire, Aura, Xcent</option>
-                        <option value="Large SUV">Large SUV — Innova, Ertiga, Crysta</option>
+                        <option value="Small Sedan">Small Sedan — Dzire, Aura</option>
+                        <option value="Large SUV">Large SUV — Ertiga</option>
+                        <option value="Luxury SUV">Luxury SUV — Innova Crysta</option>
                         <option value="Traveller">Traveller — Tempo Traveller (Custom)</option>
                       </select>
                     </div>
@@ -725,8 +728,9 @@ export default function HomePage() {
                         value={rtForm.vehicle_type}
                         onChange={rtField("vehicle_type")}
                       >
-                        <option value="Small Sedan">Small Sedan — Dzire, Aura, Xcent</option>
-                        <option value="Large SUV">Large SUV — Innova, Ertiga, Crysta</option>
+                        <option value="Small Sedan">Small Sedan — Dzire, Aura</option>
+                        <option value="Large SUV">Large SUV — Ertiga</option>
+                        <option value="Luxury SUV">Luxury SUV — Innova Crysta</option>
                         <option value="Traveller">Traveller — Tempo Traveller (Custom)</option>
                       </select>
                     </div>
