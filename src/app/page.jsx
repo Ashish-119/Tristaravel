@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useSearchParams } from "react-router";
+import LocationInput from "@/app/components/LocationInput";
 import {
   Car,
   Navigation,
@@ -395,35 +396,29 @@ export default function HomePage() {
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
                         Pickup Location
                       </label>
-                      <div className="relative">
-                        <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                        <input
-                          type="text"
-                          name="pickup_location"
-                          placeholder="City / Town / Village"
-                          required
-                          className={inputCls}
-                          value={formData.pickup_location}
-                          onChange={field("pickup_location")}
-                        />
-                      </div>
+                      <LocationInput
+                        Icon={MapPin}
+                        name="pickup_location"
+                        placeholder="City / Town / Village"
+                        required
+                        className={inputCls}
+                        value={formData.pickup_location}
+                        onChange={field("pickup_location")}
+                      />
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
                         Drop Location
                       </label>
-                      <div className="relative">
-                        <Navigation className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                        <input
-                          type="text"
-                          name="drop_location"
-                          placeholder="City / Town / Village"
-                          required
-                          className={inputCls}
-                          value={formData.drop_location}
-                          onChange={field("drop_location")}
-                        />
-                      </div>
+                      <LocationInput
+                        Icon={Navigation}
+                        name="drop_location"
+                        placeholder="City / Town / Village"
+                        required
+                        className={inputCls}
+                        value={formData.drop_location}
+                        onChange={field("drop_location")}
+                      />
                     </div>
                   </div>
 
@@ -622,33 +617,27 @@ export default function HomePage() {
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
                         Pickup Location
                       </label>
-                      <div className="relative">
-                        <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                        <input
-                          type="text"
-                          placeholder="City / Town / Village"
-                          required
-                          className={inputCls}
-                          value={rtForm.pickup_location}
-                          onChange={rtField("pickup_location")}
-                        />
-                      </div>
+                      <LocationInput
+                        Icon={MapPin}
+                        placeholder="City / Town / Village"
+                        required
+                        className={inputCls}
+                        value={rtForm.pickup_location}
+                        onChange={rtField("pickup_location")}
+                      />
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
                         Drop Location
                       </label>
-                      <div className="relative">
-                        <Navigation className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                        <input
-                          type="text"
-                          placeholder="City / Town / Village"
-                          required
-                          className={inputCls}
-                          value={rtForm.drop_location}
-                          onChange={rtField("drop_location")}
-                        />
-                      </div>
+                      <LocationInput
+                        Icon={Navigation}
+                        placeholder="City / Town / Village"
+                        required
+                        className={inputCls}
+                        value={rtForm.drop_location}
+                        onChange={rtField("drop_location")}
+                      />
                     </div>
                   </div>
 
