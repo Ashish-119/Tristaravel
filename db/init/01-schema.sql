@@ -24,6 +24,14 @@ CREATE TABLE IF NOT EXISTS quotes (
 -- Helpful for listing the newest quote requests first.
 CREATE INDEX IF NOT EXISTS quotes_created_at_idx ON quotes (created_at DESC);
 
+-- ── One-way trip details + fare range (added to quotes) ─────────────────────
+-- The one-way form now collects a travel date/time and shows a fare *range*
+-- (min in `price`, max in `price_max`), mirroring the round-trip estimate.
+ALTER TABLE quotes
+  ADD COLUMN IF NOT EXISTS travel_date date,    -- date of travel
+  ADD COLUMN IF NOT EXISTS pickup_time text,    -- e.g. '09:00'
+  ADD COLUMN IF NOT EXISTS price_max   integer; -- upper bound of fare range in INR (nullable: custom)
+
 
 
 -- ── Drivers (admin-seeded accounts for the /driver portal) ──────────────────

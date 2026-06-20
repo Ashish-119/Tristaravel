@@ -255,6 +255,11 @@ export default function DriverDashboard() {
                           </span>
                         </div>
                       )}
+                      {lead.trip_type === "one_way" && lead.travel_date && (
+                        <div className="mt-1 text-[10px] text-slate-400">
+                          {lead.travel_date} · {lead.pickup_time}
+                        </div>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-slate-600">{lead.car_type}</td>
                     <td className="px-4 py-3 text-slate-600">{fmtDistance(lead.distance)}</td>

@@ -24,10 +24,8 @@ export async function GET(request) {
     const owAvailable = await sql`
       SELECT id, full_name, phone, email, pickup, dropoff, car_type,
              distance, price, status, assigned_driver_id, picked_at, created_at,
-             NULL::date        AS travel_date,
-             NULL::text        AS pickup_time,
+             travel_date, pickup_time, price_max,
              NULL::integer     AS num_days,
-             NULL::integer     AS price_max,
              NULL::text        AS pricing_basis,
              'one_way'::text   AS trip_type
       FROM quotes
@@ -50,10 +48,8 @@ export async function GET(request) {
     const owMine = await sql`
       SELECT id, full_name, phone, email, pickup, dropoff, car_type,
              distance, price, status, assigned_driver_id, picked_at, created_at,
-             NULL::date        AS travel_date,
-             NULL::text        AS pickup_time,
+             travel_date, pickup_time, price_max,
              NULL::integer     AS num_days,
-             NULL::integer     AS price_max,
              NULL::text        AS pricing_basis,
              'one_way'::text   AS trip_type
       FROM quotes

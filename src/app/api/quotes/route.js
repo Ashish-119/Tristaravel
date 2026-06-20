@@ -6,8 +6,11 @@ export async function POST(request) {
       pickup_location,
       drop_location,
       vehicle_type,
+      travel_date,
+      pickup_time,
       distance,
       price,
+      price_max,
       full_name,
       email,
       phone,
@@ -17,6 +20,7 @@ export async function POST(request) {
       !pickup_location ||
       !drop_location ||
       !vehicle_type ||
+      !travel_date ||
       !full_name ||
       !phone
     ) {
@@ -32,8 +36,16 @@ export async function POST(request) {
     // distance/price are nullable (custom "Traveller" quotes) and email is
     // optional, so a missing value must become an explicit NULL.
     const result = await sql`
-      INSERT INTO quotes (pickup, dropoff, car_type, distance, price, full_name, email, phone)
-      VALUES (${pickup_location}, ${drop_location}, ${vehicle_type}, ${distance ?? null}, ${price ?? null}, ${full_name}, ${email ?? null}, ${phone})
+      INSERT INTO quotes (
+        pickup, dropoff, car_type, travel_date, pickup_time,
+        distance, price, price_max, full_name, email, phone
+      )
+      VALUES (
+        ${pickup_location}, ${drop_location}, ${vehicle_type},
+        ${travel_date}, ${pickup_time ?? null},
+        ${distance ?? null}, ${price ?? null}, ${price_max ?? null},
+        ${full_name}, ${email ?? null}, ${phone}
+      )
       RETURNING id
     `;
 

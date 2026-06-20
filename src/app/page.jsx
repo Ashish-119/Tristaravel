@@ -42,10 +42,17 @@ async function getRouteDistance(from, to) {
 }
 
 // ── One-way price calculation ─────────────────────────────────────────────────
+// Same approach as the round-trip estimate: return a {min, max} range using a
+// +5/km buffer on top of the base rate instead of a single approximate amount.
+const OW_KM_RATE = { "Small Sedan": 11, "Large SUV": 15 };
+
 function calcFare(distanceKM, vehicleType) {
-  if (vehicleType === "Small Sedan") return Math.round(distanceKM * 11);
-  if (vehicleType === "Large SUV") return Math.round(distanceKM * 15);
-  return null; // Traveller → custom
+  const rate = OW_KM_RATE[vehicleType];
+  if (!rate) return null; // Traveller → custom
+  return {
+    min: Math.round(distanceKM * rate),
+    max: Math.round(distanceKM * (rate + 5)),
+  };
 }
 
 // ── Round-trip price calculation ──────────────────────────────────────────────
@@ -74,6 +81,8 @@ export default function HomePage() {
   const [formData, setFormData] = useState({
     pickup_location: "",
     drop_location: "",
+    travel_date: "",
+    pickup_time: "09:00",
     vehicle_type: "Small Sedan",
     full_name: "",
     email: "",
@@ -227,6 +236,8 @@ export default function HomePage() {
       setFormData({
         pickup_location: "",
         drop_location: "",
+        travel_date: "",
+        pickup_time: "09:00",
         vehicle_type: "Small Sedan",
         full_name: "",
         email: "",
@@ -241,14 +252,15 @@ export default function HomePage() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.full_name.trim() || !formData.phone.trim()) {
-      alert("Full Name and Phone are mandatory.");
+    if (!formData.full_name.trim() || !formData.phone.trim() || !formData.travel_date) {
+      alert("Full Name, Phone, and Travel Date are mandatory.");
       return;
     }
     quoteMutation.mutate({
       ...formData,
       distance: distanceKM ? parseFloat(distanceKM.toFixed(1)) : null,
-      price: fare,
+      price: fare?.min ?? null,
+      price_max: fare?.max ?? null,
     });
   };
 
@@ -415,6 +427,48 @@ export default function HomePage() {
                     </div>
                   </div>
 
+                  {/* Travel Date & Pickup Time */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                        Travel Date
+                      </label>
+                      <div className="relative">
+                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                        <input
+                          type="date"
+                          required
+                          className={inputCls}
+                          value={formData.travel_date}
+                          onChange={field("travel_date")}
+                          min={new Date().toISOString().split("T")[0]}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                        Pickup Time
+                      </label>
+                      <div className="relative">
+                        <Clock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                        <select
+                          className={inputCls + " appearance-none cursor-pointer"}
+                          value={formData.pickup_time}
+                          onChange={field("pickup_time")}
+                        >
+                          {[
+                            "06:00","07:00","08:00","09:00","10:00","11:00","12:00",
+                            "13:00","14:00","15:00","16:00","17:00","18:00","19:00",
+                            "20:00","21:00","22:00",
+                          ].map((t) => (
+                            <option key={t} value={t}>{t}</option>
+                          ))}
+                        </select>
+                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 pointer-events-none" />
+                      </div>
+                    </div>
+                  </div>
+
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
                       Vehicle Type
@@ -477,9 +531,9 @@ export default function HomePage() {
                                 Approx. Fare
                               </p>
                               {fare !== null ? (
-                                <p className="text-xl font-bold text-white flex items-center justify-center gap-0.5">
-                                  <IndianRupee className="w-4 h-4" />
-                                  {fare.toLocaleString("en-IN")}
+                                <p className="text-lg font-bold text-white leading-tight">
+                                  ₹{fare.min.toLocaleString("en-IN")} – ₹
+                                  {fare.max.toLocaleString("en-IN")}
                                 </p>
                               ) : (
                                 <p className="text-sm font-bold text-[#FBBF24] leading-tight mt-1">
