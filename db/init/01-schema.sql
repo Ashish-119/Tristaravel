@@ -71,3 +71,42 @@ ALTER TABLE quotes
   CHECK (status IN ('new', 'pending', 'confirmed', 'cancelled'));
 
 CREATE INDEX IF NOT EXISTS quotes_status_idx ON quotes (status);
+
+-- ── Round-trip leads (separate "Get Quote" submissions) ─────────────────────
+-- Round trips are stored in their own table rather than `quotes` because they
+-- carry extra fields the one-way flow doesn't have: `num_days` (trip length)
+-- and `pricing_basis` (how the fare range was derived). Everything else mirrors
+-- `quotes` so the driver portal can treat both lead types uniformly.
+-- Defined after `drivers` because `assigned_driver_id` references it.
+CREATE TABLE IF NOT EXISTS round_trip_quotes (
+  id                 bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  pickup             text        NOT NULL,
+  dropoff            text        NOT NULL,
+  car_type           text        NOT NULL,
+  travel_date        date,                    -- date of travel
+  pickup_time        text,                    -- e.g. '09:00'
+  num_days           integer,                 -- length of the round trip in days
+  distance           numeric,                 -- road distance in km (nullable: custom)
+  price              integer,                 -- lower bound of fare range in INR (nullable: custom)
+  price_max          integer,                 -- upper bound of fare range in INR (nullable: custom)
+  pricing_basis      text,                    -- how the estimate was derived (e.g. 'custom')
+  full_name          text        NOT NULL,
+  email              text,                    -- optional
+  phone              text        NOT NULL,
+  created_at         timestamptz NOT NULL DEFAULT now(),
+  -- Lead lifecycle, mirroring `quotes`:
+  status             text        NOT NULL DEFAULT 'new',
+  assigned_driver_id bigint      REFERENCES drivers(id),
+  picked_at          timestamptz,
+  cancelled_at       timestamptz,
+  updated_at         timestamptz NOT NULL DEFAULT now()
+);
+
+-- Constrain status to the known set (drop-then-add so it's safe to re-run).
+ALTER TABLE round_trip_quotes DROP CONSTRAINT IF EXISTS round_trip_quotes_status_chk;
+ALTER TABLE round_trip_quotes
+  ADD CONSTRAINT round_trip_quotes_status_chk
+  CHECK (status IN ('new', 'pending', 'confirmed', 'cancelled'));
+
+CREATE INDEX IF NOT EXISTS round_trip_quotes_created_at_idx ON round_trip_quotes (created_at DESC);
+CREATE INDEX IF NOT EXISTS round_trip_quotes_status_idx ON round_trip_quotes (status);
