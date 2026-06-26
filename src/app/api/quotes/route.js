@@ -14,6 +14,7 @@ export async function POST(request) {
       full_name,
       email,
       phone,
+      trip_advised,
     } = await request.json();
 
     if (
@@ -38,13 +39,13 @@ export async function POST(request) {
     const result = await sql`
       INSERT INTO quotes (
         pickup, dropoff, car_type, travel_date, pickup_time,
-        distance, price, price_max, full_name, email, phone
+        distance, price, price_max, full_name, email, phone, trip_advised
       )
       VALUES (
         ${pickup_location}, ${drop_location}, ${vehicle_type},
         ${travel_date}, ${pickup_time ?? null},
         ${distance ?? null}, ${price ?? null}, ${price_max ?? null},
-        ${full_name}, ${email ?? null}, ${phone}
+        ${full_name}, ${email ?? null}, ${phone}, ${trip_advised === true}
       )
       RETURNING id
     `;

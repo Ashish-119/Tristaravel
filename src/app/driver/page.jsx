@@ -222,6 +222,7 @@ export default function DriverDashboard() {
                   <th className="px-4 py-3 font-bold">Distance</th>
                   <th className="px-4 py-3 font-bold">Fare</th>
                   <th className="px-4 py-3 font-bold">Status</th>
+                  <th className="px-4 py-3 font-bold text-center">Trip Advised</th>
                   <th className="px-4 py-3 font-bold">Requested</th>
                   <th className="px-4 py-3 font-bold text-right">Action</th>
                 </tr>
@@ -268,6 +269,18 @@ export default function DriverDashboard() {
                     </td>
                     <td className="px-4 py-3">
                       <StatusBadge status={lead.status} />
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      {lead.trip_advised ? (
+                        <span
+                          title="Came from the Plan Your Trip page"
+                          className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 text-emerald-600"
+                        >
+                          <CheckCircle2 className="w-4 h-4" />
+                        </span>
+                      ) : (
+                        <span className="text-slate-300">—</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-xs text-slate-400 whitespace-nowrap">
                       {fmtAgo(lead.created_at)}

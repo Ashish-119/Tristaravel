@@ -28,7 +28,7 @@ const navLinks = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About Us" },
   { href: "/services", label: "Services" },
-  { href: "/?trip=round", label: "Rent a Car" },
+  { href: "/plan-your-trip", label: "Plan Your Trip" },
   { href: "/contact", label: "Contact" },
 ];
 
@@ -185,10 +185,10 @@ export default function RootLayout({ children }) {
                   </li>
                   <li>
                     <a
-                      href="/rent"
+                      href="/plan-your-trip"
                       className="hover:text-white transition-colors"
                     >
-                      Fleet
+                      Plan Your Trip
                     </a>
                   </li>
                   <li>

@@ -32,6 +32,13 @@ ALTER TABLE quotes
   ADD COLUMN IF NOT EXISTS pickup_time text,    -- e.g. '09:00'
   ADD COLUMN IF NOT EXISTS price_max   integer; -- upper bound of fare range in INR (nullable: custom)
 
+-- ── "Trip Advised" flag (added to quotes) ───────────────────────────────────
+-- TRUE when the lead originated from the public "Plan Your Trip" page (the
+-- destination carousels) rather than the plain home-page booking form. Lets
+-- the driver portal flag travellers who were nudged by an advised itinerary.
+ALTER TABLE quotes
+  ADD COLUMN IF NOT EXISTS trip_advised boolean NOT NULL DEFAULT false;
+
 
 
 -- ── Drivers (admin-seeded accounts for the /driver portal) ──────────────────
@@ -101,6 +108,11 @@ CREATE TABLE IF NOT EXISTS round_trip_quotes (
   cancelled_at       timestamptz,
   updated_at         timestamptz NOT NULL DEFAULT now()
 );
+
+-- "Trip Advised" flag — TRUE when the round trip came from the "Plan Your Trip"
+-- destination carousels (mirrors the same column on `quotes`).
+ALTER TABLE round_trip_quotes
+  ADD COLUMN IF NOT EXISTS trip_advised boolean NOT NULL DEFAULT false;
 
 -- Constrain status to the known set (drop-then-add so it's safe to re-run).
 ALTER TABLE round_trip_quotes DROP CONSTRAINT IF EXISTS round_trip_quotes_status_chk;

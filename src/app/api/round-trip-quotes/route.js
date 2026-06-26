@@ -16,6 +16,7 @@ export async function POST(request) {
       full_name,
       email,
       phone,
+      trip_advised,
     } = await request.json();
 
     if (
@@ -38,14 +39,14 @@ export async function POST(request) {
       INSERT INTO round_trip_quotes (
         pickup, dropoff, car_type, travel_date, pickup_time, num_days,
         distance, price, price_max, pricing_basis,
-        full_name, email, phone
+        full_name, email, phone, trip_advised
       )
       VALUES (
         ${pickup_location}, ${drop_location}, ${vehicle_type},
         ${travel_date}, ${pickup_time}, ${num_days},
         ${distance ?? null}, ${price ?? null}, ${price_max ?? null},
         ${pricing_basis ?? "custom"},
-        ${full_name}, ${email ?? null}, ${phone}
+        ${full_name}, ${email ?? null}, ${phone}, ${trip_advised === true}
       )
       RETURNING id
     `;

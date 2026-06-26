@@ -24,7 +24,7 @@ export async function GET(request) {
     const owAvailable = await sql`
       SELECT id, full_name, phone, email, pickup, dropoff, car_type,
              distance, price, status, assigned_driver_id, picked_at, created_at,
-             travel_date, pickup_time, price_max,
+             travel_date, pickup_time, price_max, trip_advised,
              NULL::integer     AS num_days,
              NULL::text        AS pricing_basis,
              'one_way'::text   AS trip_type
@@ -37,7 +37,7 @@ export async function GET(request) {
     const rtAvailable = await sql`
       SELECT id, full_name, phone, email, pickup, dropoff, car_type,
              distance, price, status, assigned_driver_id, picked_at, created_at,
-             travel_date, pickup_time, num_days, price_max, pricing_basis,
+             travel_date, pickup_time, num_days, price_max, pricing_basis, trip_advised,
              'round_trip'::text AS trip_type
       FROM round_trip_quotes
       WHERE status IN ('new', 'pending') AND assigned_driver_id IS NULL
@@ -48,7 +48,7 @@ export async function GET(request) {
     const owMine = await sql`
       SELECT id, full_name, phone, email, pickup, dropoff, car_type,
              distance, price, status, assigned_driver_id, picked_at, created_at,
-             travel_date, pickup_time, price_max,
+             travel_date, pickup_time, price_max, trip_advised,
              NULL::integer     AS num_days,
              NULL::text        AS pricing_basis,
              'one_way'::text   AS trip_type
@@ -61,7 +61,7 @@ export async function GET(request) {
     const rtMine = await sql`
       SELECT id, full_name, phone, email, pickup, dropoff, car_type,
              distance, price, status, assigned_driver_id, picked_at, created_at,
-             travel_date, pickup_time, num_days, price_max, pricing_basis,
+             travel_date, pickup_time, num_days, price_max, pricing_basis, trip_advised,
              'round_trip'::text AS trip_type
       FROM round_trip_quotes
       WHERE assigned_driver_id = ${driver.id}

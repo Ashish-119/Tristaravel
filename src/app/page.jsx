@@ -80,10 +80,16 @@ export default function HomePage() {
     searchParams.get("trip") === "round" ? "round_trip" : "one_way",
   );
 
+  // Leads that arrive from the "Plan Your Trip" page carry `advised=1` and a
+  // pre-selected destination (`dest`). We flag these so the driver portal can
+  // show a "Trip Advised" tick, and pre-fill the drop location for convenience.
+  const tripAdvised = searchParams.get("advised") === "1";
+  const advisedDest = searchParams.get("dest") ?? "";
+
   // ── One-way form state ───────────────────────────────────────────────────────
   const [formData, setFormData] = useState({
     pickup_location: "",
-    drop_location: "",
+    drop_location: advisedDest,
     travel_date: "",
     pickup_time: "09:00",
     vehicle_type: "Small Sedan",
@@ -103,7 +109,7 @@ export default function HomePage() {
   // ── Round-trip form state ────────────────────────────────────────────────────
   const [rtForm, setRtForm] = useState({
     pickup_location: "",
-    drop_location: "",
+    drop_location: advisedDest,
     travel_date: "",
     pickup_time: "09:00",
     num_days: 2,
@@ -264,6 +270,7 @@ export default function HomePage() {
       distance: distanceKM ? parseFloat(distanceKM.toFixed(1)) : null,
       price: fare?.min ?? null,
       price_max: fare?.max ?? null,
+      trip_advised: tripAdvised,
     });
   };
 
@@ -310,6 +317,7 @@ export default function HomePage() {
       price: rtFare?.basis === "km" ? rtFare.min : (rtFare?.amount ?? null),
       price_max: rtFare?.basis === "km" ? rtFare.max : null,
       pricing_basis: rtFare ? rtFare.basis : "custom",
+      trip_advised: tripAdvised,
     });
   };
 
@@ -363,6 +371,18 @@ export default function HomePage() {
                   Get an instant fare estimate — no sign-up needed
                 </p>
               </div>
+
+              {tripAdvised && advisedDest && (
+                <div className="mb-5 flex items-start gap-3 bg-[#FBBF24]/10 border border-[#FBBF24]/40 rounded-xl px-4 py-3">
+                  <MapPin className="w-4 h-4 text-[#c1121f] shrink-0 mt-0.5" />
+                  <p className="text-sm text-slate-600">
+                    Planning a trip to{" "}
+                    <span className="font-bold text-[#1E293B]">{advisedDest}</span>
+                    . We've filled in your destination — just add your pickup &amp;
+                    details.
+                  </p>
+                </div>
+              )}
 
               {/* ── Trip type toggle ─────────────────────────────────────── */}
               <div className="flex bg-slate-100 rounded-2xl p-1 mb-6">
