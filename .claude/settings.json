@@ -11,7 +11,16 @@
       "Bash(curl -s \"https://photon.komoot.io/api/?q=Jaypur&limit=5&lang=en\")",
       "Bash(curl -s \"https://nominatim.openstreetmap.org/search?format=json&countrycodes=in&limit=5&q=Dharmashala\" -H \"User-Agent: tristaravel-test\")",
       "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(x.get\\('display_name',''\\)[:70]\\) for x in d]\")",
-      "Bash(curl -s -o /dev/null -w \"page HTTP %{http_code}\\\\n\" http://localhost:4000/)"
+      "Bash(curl -s -o /dev/null -w \"page HTTP %{http_code}\\\\n\" http://localhost:4000/)",
+      "PowerShell(if \\($LASTEXITCODE -ne 0\\) { \"docker-unavailable\" })",
+      "Bash(git rm *)",
+      "PowerShell(npm run build 2>&1)",
+      "PowerShell($n = Get-Command node -ErrorAction SilentlyContinue; if \\($n\\) { $n.Source } else { @\\(\"$env:ProgramFiles\\\\nodejs\\\\node.exe\",\"$env:LOCALAPPDATA\\\\Programs\\\\nodejs\\\\node.exe\",\"$env:APPDATA\\\\npm\\\\node.exe\"\\) | Where-Object { Test-Path $_ } })",
+      "PowerShell(Start-Process \"d:\\\\Tristaravel\\\\plan-your-trip-preview.html\")",
+      "PowerShell(\"opened\")",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
     ]
   }
 }
