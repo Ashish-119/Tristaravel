@@ -43,8 +43,14 @@ export async function sendNotifications(quoteId, tripType, data) {
 
   // ── Email via Resend ────────────────────────────────────────────────────────
   if (process.env.RESEND_API_KEY && process.env.NOTIFICATION_EMAIL) {
-    const from =
-      process.env.RESEND_FROM_EMAIL ?? "Tristaravel <quotes@tristaravel.com>";
+    // Strip bare angle brackets — Resend requires either "email@domain.com"
+    // or "Name <email@domain.com>". A value like "<email@domain.com>" (no name)
+    // is invalid and causes a silent 422 rejection.
+    const rawFrom = process.env.RESEND_FROM_EMAIL ?? "";
+    const from = rawFrom.trim().startsWith("<") && !rawFrom.includes(" ")
+      ? rawFrom.replace(/[<>]/g, "").trim()
+      : rawFrom || "Tristaravel <quotes@tristaravel.com>";
+
     fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -57,7 +63,16 @@ export async function sendNotifications(quoteId, tripType, data) {
         subject,
         html: `<pre style="font-family:sans-serif;font-size:14px;line-height:1.7">${plain}</pre>`,
       }),
-    }).catch((err) => console.error("[notify] Resend error:", err));
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const body = await res.text();
+          console.error(`[notify] Resend ${res.status}:`, body);
+        } else {
+          console.log("[notify] Email sent for quote #" + quoteId);
+        }
+      })
+      .catch((err) => console.error("[notify] Resend network error:", err));
   }
 
   // ── Push via ntfy.sh ────────────────────────────────────────────────────────
