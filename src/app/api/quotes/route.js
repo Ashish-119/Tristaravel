@@ -1,4 +1,5 @@
 import sql from "@/app/api/utils/sql";
+import { sendNotifications } from "@/app/api/utils/notify";
 
 export async function POST(request) {
   try {
@@ -50,7 +51,13 @@ export async function POST(request) {
       RETURNING id
     `;
 
-    return Response.json({ success: true, quoteId: result[0].id });
+    const quoteId = result[0].id;
+    sendNotifications(quoteId, "one-way", {
+      full_name, phone, email, pickup_location, drop_location,
+      travel_date, pickup_time, vehicle_type, distance, price, price_max,
+      trip_advised,
+    });
+    return Response.json({ success: true, quoteId });
   } catch (error) {
     console.error("Quote submission error:", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
