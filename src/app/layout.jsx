@@ -135,9 +135,9 @@ export default function RootLayout({ children }) {
         {!isDriver && (
         <footer className="bg-[#1E293B] text-slate-300 pt-16 pb-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-16">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-10 md:gap-12 mb-16">
               {/* Brand */}
-              <div className="col-span-1">
+              <div className="col-span-2 md:col-span-1">
                 <a href="/" className="flex items-center gap-2 mb-6">
                   <Car className="text-[#FBBF24] w-6 h-6" />
                   <span className="text-xl font-bold tracking-tight text-white">
