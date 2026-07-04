@@ -77,14 +77,30 @@ export async function sendNotifications(quoteId, tripType, data) {
 
   // ── Push via ntfy.sh ────────────────────────────────────────────────────────
   if (process.env.NTFY_TOPIC) {
+    // HTTP headers must be ASCII-safe — strip ₹, —, and other non-ASCII chars
+    const safeTitle = subject
+      .replace(/₹/g, "Rs")
+      .replace(/[—–]/g, "-")
+      .replace(/[^\x00-\x7F]/g, "");
+
     fetch(`https://ntfy.sh/${process.env.NTFY_TOPIC}`, {
       method: "POST",
       body: plain,
       headers: {
-        Title: subject,
+        Title: safeTitle,
         Priority: "high",
         Tags: "car,bell",
+        "Content-Type": "text/plain; charset=utf-8",
       },
-    }).catch((err) => console.error("[notify] ntfy error:", err));
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const body = await res.text();
+          console.error(`[notify] ntfy ${res.status}:`, body);
+        } else {
+          console.log("[notify] ntfy push sent for quote #" + quoteId);
+        }
+      })
+      .catch((err) => console.error("[notify] ntfy network error:", err));
   }
 }
