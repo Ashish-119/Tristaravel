@@ -88,7 +88,7 @@ export async function sendNotifications(quoteId, tripType, data) {
       body: plain,
       headers: {
         Title: safeTitle,
-        Priority: "high",
+        Priority: "urgent",
         Tags: "car,bell",
         "Content-Type": "text/plain; charset=utf-8",
       },
